@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import heroImg from "@/assets/hero-kick.jpg";
+import heroImg from "@/assets/mestre-wesley.jpg";
+import { Button } from "@/components/ui/button";
+import { PlansSection } from "@/components/plans-section";
 import placa from "@/assets/placa.jpg.asset.json";
 import dojang from "@/assets/dojang.jpg.asset.json";
 
@@ -46,12 +48,21 @@ const NAV = [
   ["sobre", "Sobre"],
   ["valores", "Valores"],
   ["aulas", "Aulas"],
+  ["planos", "Planos"],
   ["estrutura", "Estrutura"],
   ["mestres", "Mestres"],
   ["contato", "Contato"],
 ] as const;
 
 const IG = "https://www.instagram.com/teamimperios/";
+
+function scrollToSection(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+  window.history.replaceState(null, "", `#${id}`);
+}
 
 function useReveal() {
   useEffect(() => {
@@ -86,7 +97,7 @@ function Header() {
   const go = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     setOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    scrollToSection(id);
   };
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6">
@@ -102,31 +113,32 @@ function Header() {
             Team <span className="text-gold">Impérios</span>
           </span>
         </a>
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-1 lg:flex">
           {NAV.map(([id, label]) => (
             <li key={id}>
               <a
                 href={`#${id}`}
                 onClick={go(id)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${active === id ? "bg-ink text-ink-foreground" : "text-foreground/75 hover:text-foreground"}`}
+                aria-current={active === id ? "location" : undefined}
+                className={`rounded-full px-3 py-2 text-sm font-semibold transition-colors ${active === id ? "bg-ink text-ink-foreground" : "text-foreground/75 hover:text-foreground"}`}
               >
                 {label}
               </a>
             </li>
           ))}
         </ul>
-        <a href={IG} target="_blank" rel="noreferrer" className="hidden rounded-full bg-gold px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105 md:inline-flex">
+        <a href={IG} target="_blank" rel="noreferrer" className="hidden rounded-full bg-gold px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105 lg:inline-flex">
           Aula experimental
         </a>
-        <button aria-label="Abrir menu" aria-expanded={open} onClick={() => setOpen(!open)} className="glass grid h-10 w-10 place-items-center rounded-xl md:hidden">
+        <Button variant="ghost" size="icon" aria-label={open ? "Fechar menu" : "Abrir menu"} aria-expanded={open} onClick={() => setOpen(!open)} className="glass grid h-10 w-10 place-items-center rounded-xl lg:hidden">
           <span className="flex flex-col gap-1.5">
             <span className={`h-0.5 w-5 bg-foreground transition-transform ${open ? "translate-y-2 rotate-45" : ""}`} />
             <span className={`h-0.5 w-5 bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} />
             <span className={`h-0.5 w-5 bg-foreground transition-transform ${open ? "-translate-y-2 -rotate-45" : ""}`} />
           </span>
-        </button>
+        </Button>
       </nav>
-      <div className={`glass mx-auto mt-2 max-w-6xl overflow-hidden rounded-2xl transition-all duration-500 md:hidden ${open ? "max-h-96 opacity-100" : "max-h-0 border-0 opacity-0"}`}>
+      <div inert={!open} className={`glass mx-auto mt-2 max-w-6xl overflow-hidden rounded-2xl transition-all duration-500 lg:hidden ${open ? "max-h-[28rem] opacity-100" : "max-h-0 border-0 opacity-0"}`}>
         <ul className="flex flex-col p-3">
           {NAV.map(([id, label]) => (
             <li key={id}>
@@ -192,14 +204,14 @@ function Index() {
                 <a href={IG} target="_blank" rel="noreferrer" className="rounded-full bg-gold px-7 py-3.5 font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105">
                   Agende sua aula grátis
                 </a>
-                <a href="#sobre" className="glass rounded-full px-7 py-3.5 font-bold transition-transform hover:scale-105">
+                <a href="#sobre" onClick={(e) => { e.preventDefault(); scrollToSection("sobre"); }} className="glass rounded-full px-7 py-3.5 font-bold transition-transform hover:scale-105">
                   Conheça o dojang
                 </a>
               </div>
             </div>
             <div className="reveal relative">
               <div className="animate-float-slow glass rounded-[2rem] p-2">
-                <img src={heroImg} alt="Atleta faixa preta executando chute lateral no dojang" width={1600} height={1008} className="aspect-[4/5] w-full rounded-[1.6rem] object-cover md:aspect-[4/5]" />
+                <img src={heroImg} alt="Mestre Wesley Lúcio demonstrando um chute no dojang Team Impérios" width={960} height={1216} className="aspect-[4/5] w-full rounded-[1.6rem] object-cover" />
               </div>
               <div className="glass-ink absolute -bottom-6 -left-4 rounded-2xl px-5 py-4 text-ink-foreground md:-left-10">
                 <p className="font-display text-4xl text-gold">4º Dan</p>
@@ -265,7 +277,7 @@ function Index() {
                   <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold-deep">{a}</p>
                   <h3 className="mt-3 text-5xl">{t}</h3>
                   <p className={`mt-4 text-sm ${i === 1 ? "opacity-80" : "text-muted-foreground"}`}>{d}</p>
-                  <a href={IG} target="_blank" rel="noreferrer" className="mt-6 inline-block text-sm font-bold text-gold">
+                  <a href="#planos" onClick={(e) => { e.preventDefault(); scrollToSection("planos"); }} className="mt-6 inline-block text-sm font-bold text-gold">
                     Ver horários →
                   </a>
                 </article>
@@ -273,6 +285,8 @@ function Index() {
             </div>
           </div>
         </section>
+
+        <PlansSection />
 
         {/* ESTRUTURA */}
         <section id="estrutura" className="py-24">
@@ -302,8 +316,8 @@ function Index() {
                 ["Prof. Cristiano Lima", "Faixa preta 2º Dan", "Instrutor dedicado à formação técnica e ao desenvolvimento dos atletas da equipe."],
               ].map(([n, g, d]) => (
                 <article key={n} className="reveal glass flex gap-5 rounded-3xl p-7">
-                  <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-ink">
-                    <span className="font-display text-3xl text-gold">{n?.split(" ").at(-1)?.charAt(0)}</span>
+                  <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-ink">
+                    {n === "Mestre Wesley Lúcio" ? <img src={heroImg} alt="Mestre Wesley Lúcio" loading="lazy" className="h-full w-full object-cover object-[70%_15%]" /> : <span className="font-display text-3xl text-gold">{n?.split(" ").at(-1)?.charAt(0)}</span>}
                   </div>
                   <div>
                     <h3 className="text-4xl">{n}</h3>
