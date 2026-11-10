@@ -6,5 +6,14 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   base: process.env.BASE_PATH ?? "/",
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: "assets/index.js",
+        chunkFileNames: "assets/[name].js",
+        assetFileNames: "assets/[name][extname]",
+      },
+    },
+  },
   plugins: [tanstackStart({}), react(), tailwindcss(), tsconfigPaths()],
 });
