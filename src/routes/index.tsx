@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import heroImg from "@/assets/mestre-wesley.jpg";
+import wesleyImg from "@/assets/wesley.jpg";
+import cristianoImg from "@/assets/cristiano.jpg";
+import logoImg from "@/assets/logo-team-imperios.jpg";
+import dojangImg from "@/assets/dojang.jpg";
 import { Button } from "@/components/ui/button";
 import { PlansSection } from "@/components/plans-section";
-import placa from "@/assets/placa.jpg.asset.json";
-import dojang from "@/assets/dojang.jpg.asset.json";
 
 const TITLE = "Team Impérios Taekwondo | Dojang Moo Duk Kwan em Varginha/MG";
 const DESC =
@@ -106,9 +107,7 @@ function Header() {
         aria-label="Navegação principal"
       >
         <a href="#inicio" onClick={go("inicio")} className="flex items-center gap-2">
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-ink shadow-gold">
-            <span className="font-display text-lg text-gold">TI</span>
-          </span>
+          <img src={logoImg} alt="Logo Team Impérios Taekwondo" className="h-10 w-10 rounded-full object-cover shadow-gold" />
           <span className="font-display text-xl tracking-wider md:text-2xl">
             Team <span className="text-gold">Impérios</span>
           </span>
@@ -211,7 +210,7 @@ function Index() {
             </div>
             <div className="reveal relative">
               <div className="animate-float-slow glass rounded-[2rem] p-2">
-                <img src={heroImg} alt="Mestre Wesley Lúcio demonstrando um chute no dojang Team Impérios" width={960} height={1216} className="aspect-[4/5] w-full rounded-[1.6rem] object-cover" />
+                <img src={wesleyImg} alt="Mestre Wesley Lúcio no dojang Team Impérios" width={960} height={1216} className="aspect-[4/5] w-full rounded-[1.6rem] object-cover object-[50%_8%]" />
               </div>
               <div className="glass-ink absolute -bottom-6 -left-4 rounded-2xl px-5 py-4 text-ink-foreground md:-left-10">
                 <p className="font-display text-4xl text-gold">4º Dan</p>
@@ -225,7 +224,7 @@ function Index() {
         <section id="sobre" className="py-24">
           <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 md:grid-cols-2">
             <div className="reveal glass rounded-[2rem] p-2">
-              <img src={placa.url} alt="Placa Team Impérios — Dojang Taekwondo Moo Duk Kwan" loading="lazy" className="w-full rounded-[1.6rem]" />
+              <img src={logoImg} alt="Logo Team Impérios — Dojang Taekwondo Moo Duk Kwan" loading="lazy" className="w-full rounded-[1.6rem]" />
             </div>
             <div className="reveal">
               <p className="mb-3 text-xs font-bold uppercase tracking-[0.35em] text-gold-deep">Nossa história</p>
@@ -293,7 +292,7 @@ function Index() {
           <div className="mx-auto max-w-6xl px-5">
             <SectionTitle kicker="Nosso espaço" title="O" gold="Dojang" />
             <div className="reveal glass rounded-[2rem] p-2">
-              <img src={dojang.url} alt="Estrutura do dojang: tatame, recepção, vestiário e banho" loading="lazy" className="w-full rounded-[1.6rem]" />
+              <img src={dojangImg} alt="Dojang Team Impérios Taekwondo" loading="lazy" className="w-full rounded-[1.6rem] object-cover object-center" />
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {["Tatame profissional", "Sacos e bonecos de treino", "Vestiário e banho", "Recepção climatizada"].map((f) => (
@@ -317,7 +316,7 @@ function Index() {
               ].map(([n, g, d]) => (
                 <article key={n} className="reveal glass flex gap-5 rounded-3xl p-7">
                   <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-ink">
-                    {n === "Mestre Wesley Lúcio" ? <img src={heroImg} alt="Mestre Wesley Lúcio" loading="lazy" className="h-full w-full object-cover object-[70%_15%]" /> : <span className="font-display text-3xl text-gold">{n?.split(" ").at(-1)?.charAt(0)}</span>}
+                    <img src={n === "Mestre Wesley Lúcio" ? wesleyImg : cristianoImg} alt={n} loading="lazy" className="h-full w-full object-cover object-[50%_15%]" />
                   </div>
                   <div>
                     <h3 className="text-4xl">{n}</h3>

@@ -1,32 +1,33 @@
-# Team Imperios Taekwondo
+# Team Impérios Taekwondo
 
-$lovable vamos criar um site institucional para o Team Imperios Taekwondo. Pegue as informações relevantes do instagram:
+Site institucional do Team Impérios Taekwondo, dojang Moo Duk Kwan em Varginha/MG.
 
-https://www.instagram.com/teamimperios/
+## Desenvolvimento local
 
-e do google deles:
+Requisitos: Node.js 20+ e npm.
 
-https://www.google.com/search?q=team+imperios&oq=team+imperios&gs_lcrp=EgZjaHJvbWUqCAgAEEUYJxg7MggIABBFGCcYOzIICAEQABgWGB4yCggCEAAYChgWGB4yDQgDEAAYhgMYgAQYigUyDQgEEAAYhgMYgAQYigUyBggFEEUYPDIGCAYQRRg8MgYIBxBFGDzSAQgxNTY2ajBqN6gCALACAA&sourceid=chrome&source=chrome.ob&ie=UTF-8
-
-Vamos criar um site com tons claros aproveitando bastante as cores do dojo (veja na foto que te mandei a logo deles na parede branca com a iluminação de fundo). O site deve ser responsivo, com bom SEO, com animações no scroll para ir para as outras sessões e animação de rolagem se navegarmos pelo header. Coloque glassmorphism e outras classes que possam dar um visual premium.
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b9a08d2e-697c-477a-91b9-43463e27ddbe).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```bash
+npm install
 npm run dev
 ```
+
+```bash
+npm run build   # build de produção
+npm run lint    # análise estática
+npm test        # testes
+```
+
+## Publicação no GitHub Pages
+
+O workflow em `.github/workflows/deploy.yml` publica automaticamente a aplicação quando há push na branch `main`.
+
+No repositório do GitHub, habilite **Settings → Pages → Source: GitHub Actions**.
+
+## Organização do projeto
+
+- `src/routes/index.tsx`: página institucional e SEO.
+- `src/components/plans-section.tsx`: planos e horários.
+- `src/lib/plans.ts`: fonte compartilhada dos preços e horários.
+- `src/assets/`: fotos dos mestres e logo oficial.
+
+As fotos e a logo pertencem ao Team Impérios Taekwondo e devem ser usadas apenas com autorização.
