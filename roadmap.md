@@ -1,0 +1,3 @@
+- [ ] Improve Wesley's supplied photo and replace the initial image.
+- [ ] Add supplied plans, prices and schedules with price tests.
+- [ ] Verify scroll animations and section navigation on desktop and mobile.

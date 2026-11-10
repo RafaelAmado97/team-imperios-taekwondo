@@ -173,4 +173,8 @@
 .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
 @keyframes glow-pulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
 .animate-glow { animation: glow-pulse 4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } html { scroll-behavior: auto; } }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
+  .animate-float-slow, .animate-glow { animation: none; }
+}
