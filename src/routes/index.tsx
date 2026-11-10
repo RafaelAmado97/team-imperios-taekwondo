@@ -61,7 +61,10 @@ function scrollToSection(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  el.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+  const header = document.querySelector("header");
+  const headerOffset = (header?.getBoundingClientRect().height ?? 76) + 20;
+  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerOffset);
+  window.scrollTo({ top, behavior: reducedMotion ? "auto" : "smooth" });
   window.history.replaceState(null, "", `#${id}`);
 }
 
@@ -82,18 +85,73 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
   useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 30);
-      let cur = "";
-      for (const [id] of NAV) {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top < 140) cur = id;
+    const root = document.documentElement;
+    let target = window.scrollY;
+    let current = target;
+    let frame = 0;
+    let lastTime = 0;
+    let active = false;
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+    const animate = (time: number) => {
+      if (!lastTime) lastTime = time;
+      const delta = target - current;
+      current += delta * Math.min(1, (time - lastTime) / 110);
+      window.scrollTo(0, current);
+      lastTime = time;
+      if (Math.abs(target - current) > 1) frame = requestAnimationFrame(animate);
+      else {
+        window.scrollTo(0, target);
+        current = target;
+        active = false;
+        lastTime = 0;
+        frame = 0;
       }
-      setActive(cur);
     };
-    onScroll();
+    const onWheel = (event: WheelEvent) => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || event.ctrlKey || event.deltaY === 0) return;
+      const element = event.target;
+      if (element instanceof Element && element.closest("[data-native-scroll]")) return;
+      event.preventDefault();
+      if (!active) {
+        current = window.scrollY;
+        target = current;
+        active = true;
+      }
+      target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, target + event.deltaY * 1.25));
+      if (!frame) frame = requestAnimationFrame(animate);
+    };
+    root.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      root.removeEventListener("wheel", onWheel);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      setScrolled(window.scrollY > 30);
+      const threshold = 150;
+      const sections = NAV.map(([id]) => ({ id, el: document.getElementById(id) }))
+        .filter((item): item is { id: (typeof NAV)[number][0]; el: HTMLElement } => item.el !== null)
+        .map(({ id, el }) => ({ id, top: el.getBoundingClientRect().top }));
+      const current = [...sections].reverse().find((section) => section.top <= threshold)?.id ?? "";
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        update();
+      });
+    };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
   const go = (id: string) => (e: React.MouseEvent) => {
     e.preventDefault();
