@@ -303,7 +303,7 @@ function Index() {
               ].map(([n, g, d]) => (
                 <article key={n} className="reveal glass flex gap-5 rounded-3xl p-7">
                   <div className="grid h-20 w-20 shrink-0 place-items-center rounded-2xl bg-ink">
-                    <span className="font-display text-3xl text-gold">{n.split(" ").at(-1)?.charAt(0)}</span>
+                    <span className="font-display text-3xl text-gold">{n?.split(" ").at(-1)?.charAt(0)}</span>
                   </div>
                   <div>
                     <h3 className="text-4xl">{n}</h3>
