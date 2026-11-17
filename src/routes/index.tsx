@@ -2,8 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import wesleyImg from "@/assets/wesley.jpg";
 import cristianoImg from "@/assets/cristiano.jpg";
+import davyImg from "@/assets/davy.jpeg";
 import logoImg from "@/assets/logo-team-imperios.jpg";
 import dojangImg from "@/assets/dojang.jpg";
+import gallery01 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.23.jpeg";
+import gallery02 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.24.jpeg";
+import gallery03 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.25.jpeg";
+import gallery04 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.25 (1).jpeg";
+import gallery05 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.26.jpeg";
+import gallery06 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.27.jpeg";
+import gallery07 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.27 (1).jpeg";
+import gallery08 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.28.jpeg";
+import gallery09 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.29.jpeg";
+import gallery10 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.30.jpeg";
+import gallery11 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.30 (1).jpeg";
+import gallery12 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.30 (2).jpeg";
 import { Button } from "@/components/ui/button";
 import { PlansSection } from "@/components/plans-section";
 
@@ -51,11 +64,14 @@ const NAV = [
   ["aulas", "Aulas"],
   ["planos", "Planos"],
   ["estrutura", "Estrutura"],
+  ["galeria", "Galeria"],
   ["mestres", "Mestres"],
   ["contato", "Contato"],
 ] as const;
 
 const IG = "https://www.instagram.com/teamimperios/";
+const WHATSAPP = "https://wa.me/5535991950352";
+const GALLERY = [gallery01, gallery02, gallery03, gallery04, gallery05, gallery06, gallery07, gallery08, gallery09, gallery10, gallery11, gallery12];
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
@@ -70,13 +86,8 @@ function scrollToSection(id: string) {
 
 function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll(".reveal");
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && (e.target.classList.add("is-visible"), io.unobserve(e.target))),
-      { threshold: 0.15 },
-    );
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    document.documentElement.classList.add("has-scroll-reveal");
+    return () => document.documentElement.classList.remove("has-scroll-reveal");
   }, []);
 }
 
@@ -85,45 +96,42 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
   useEffect(() => {
-    const root = document.documentElement;
-    let target = window.scrollY;
-    let current = target;
-    let frame = 0;
-    let lastTime = 0;
-    let active = false;
-    const ease = (t: number) => 1 - Math.pow(1 - t, 3);
-    const animate = (time: number) => {
-      if (!lastTime) lastTime = time;
-      const delta = target - current;
-      current += delta * Math.min(1, (time - lastTime) / 110);
-      window.scrollTo(0, current);
-      lastTime = time;
-      if (Math.abs(target - current) > 1) frame = requestAnimationFrame(animate);
-      else {
-        window.scrollTo(0, target);
-        current = target;
-        active = false;
-        lastTime = 0;
-        frame = 0;
-      }
-    };
+    const sectionIds = ["inicio", ...NAV.map(([id]) => id)];
+    let locked = false;
+    let unlockTimer = 0;
     const onWheel = (event: WheelEvent) => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || event.ctrlKey || event.deltaY === 0) return;
+      if (event.ctrlKey || event.deltaY === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const element = event.target;
-      if (element instanceof Element && element.closest("[data-native-scroll]")) return;
-      event.preventDefault();
-      if (!active) {
-        current = window.scrollY;
-        target = current;
-        active = true;
+      if (element instanceof Element && element.closest("[data-native-scroll], details[open]")) return;
+      const scrollable = element instanceof Element ? element.closest<HTMLElement>("[data-scrollable]") : null;
+      if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
+        const canScroll = event.deltaY < 0 ? scrollable.scrollTop > 0 : scrollable.scrollTop + scrollable.clientHeight < scrollable.scrollHeight;
+        if (canScroll) return;
       }
-      target = Math.max(0, Math.min(document.documentElement.scrollHeight - innerHeight, target + event.deltaY * 1.25));
-      if (!frame) frame = requestAnimationFrame(animate);
+      if (locked) {
+        event.preventDefault();
+        return;
+      }
+      event.preventDefault();
+
+      const header = document.querySelector("header");
+      const threshold = (header?.getBoundingClientRect().height ?? 76) + 40;
+      const sections = sectionIds.map((id) => document.getElementById(id)).filter((section): section is HTMLElement => section !== null);
+      const currentIndex = sections.reduce((current, section, index) => section.getBoundingClientRect().top <= threshold ? index : current, 0);
+      const direction = event.deltaY > 0 ? 1 : -1;
+      const nextSection = sections[Math.max(0, Math.min(sections.length - 1, currentIndex + direction))];
+      if (!nextSection || nextSection === sections[currentIndex]) return;
+
+      locked = true;
+      window.clearTimeout(unlockTimer);
+      window.scrollTo({ top: Math.max(0, nextSection.getBoundingClientRect().top + window.scrollY - threshold), behavior: "smooth" });
+      window.history.replaceState(null, "", `#${nextSection.id}`);
+      unlockTimer = window.setTimeout(() => { locked = false; }, 1100);
     };
-    root.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("wheel", onWheel, { passive: false });
     return () => {
-      root.removeEventListener("wheel", onWheel);
-      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("wheel", onWheel);
+      window.clearTimeout(unlockTimer);
     };
   }, []);
   useEffect(() => {
@@ -258,7 +266,7 @@ function Index() {
               </h1>
               <p className="mt-6 max-w-md text-lg text-muted-foreground">Disciplina, respeito e superação. Taekwondo coreano para todas as idades.</p>
               <div className="mt-8 flex flex-wrap gap-3">
-                <a href={IG} target="_blank" rel="noreferrer" className="rounded-full bg-gold px-7 py-3.5 font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105">
+                <a href={WHATSAPP} target="_blank" rel="noreferrer" className="rounded-full bg-gold px-7 py-3.5 font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105">
                   Agende sua aula grátis
                 </a>
                 <a href="#sobre" onClick={(e) => { e.preventDefault(); scrollToSection("sobre"); }} className="glass rounded-full px-7 py-3.5 font-bold transition-transform hover:scale-105">
@@ -270,7 +278,7 @@ function Index() {
               <div className="animate-float-slow glass rounded-[2rem] p-2">
                 <img src={wesleyImg} alt="Mestre Wesley Lúcio no dojang Team Impérios" width={960} height={1216} className="aspect-[4/5] w-full rounded-[1.6rem] object-cover object-[50%_8%]" />
               </div>
-              <div className="glass-ink absolute -bottom-6 -left-4 rounded-2xl px-5 py-4 text-ink-foreground md:-left-10">
+              <div className="dan-card glass-ink absolute -bottom-6 -left-4 rounded-2xl px-5 py-4 text-ink-foreground md:-left-10">
                 <p className="font-display text-4xl text-gold">4º Dan</p>
                 <p className="text-xs uppercase tracking-widest opacity-80">Mestre Wesley Lúcio</p>
               </div>
@@ -289,15 +297,17 @@ function Index() {
               <h2 className="text-5xl md:text-6xl">
                 Muito além do <span className="text-gold">tatame</span>
               </h2>
-              <p className="mt-6 text-muted-foreground">
-                A Team Impérios forma atletas e cidadãos mais conscientes através do Taekwondo — arte marcial milenar coreana e esporte olímpico desde Sydney 2000.
-              </p>
-              <p className="mt-4 text-muted-foreground">
-                Seguimos a linhagem tradicional Moo Duk Kwan, unindo técnica, filosofia e competição em um ambiente acolhedor para crianças, jovens e adultos.
-              </p>
+              <div className="mt-6 space-y-4 text-muted-foreground">
+                <p>A Team Impérios nasceu com um propósito que vai muito além de ensinar técnicas de luta: formar pessoas melhores por meio do Taekwondo.</p>
+                <p>Acreditamos que cada aluno carrega um potencial único, que pode ser desenvolvido através da disciplina, do respeito, da perseverança e da dedicação.</p>
+                <p>Seguindo a tradição Moo Duk Kwan, preservamos os ensinamentos e a filosofia dessa arte marcial milenar, unindo tradição, evolução técnica e espírito esportivo.</p>
+                <p>Nossa missão é transformar vidas, construir campeões dentro e fora do tatame e ensinar valores que acompanham nossos alunos por toda a vida.</p>
+                <p>Mais do que uma equipe, somos uma família. Mais do que medalhas, buscamos conquistas pessoais. Mais do que atletas, formamos cidadãos.</p>
+                <p className="font-bold tracking-wide text-gold-deep">TEAM IMPÉRIOS — FORMANDO CAMPEÕES, CONSTRUINDO CARÁTER E TRANSFORMANDO VIDAS!</p>
+              </div>
               <div className="mt-8 grid grid-cols-3 gap-3">
                 {[["4º", "Dan"], ["+100", "Alunos"], ["🏆", "Campeões"]].map(([n, l]) => (
-                  <div key={l} className="glass rounded-2xl p-4 text-center">
+                  <div key={l} className="dan-stat glass rounded-2xl p-4 text-center">
                     <p className="font-display text-4xl text-gold">{n}</p>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{l}</p>
                   </div>
@@ -370,11 +380,11 @@ function Index() {
             <div className="grid gap-6 md:grid-cols-2">
               {[
                 ["Mestre Wesley Lúcio", "Faixa preta 4º Dan", "Anos de experiência ensinando todas as idades, com participação em competições e seminários."],
-                ["Prof. Cristiano Lima", "Faixa preta 2º Dan", "Instrutor dedicado à formação técnica e ao desenvolvimento dos atletas da equipe."],
+                ["Prof. Davy Emanuel", "Faixa preta 1º Dan", "Instrutor dedicado à formação técnica e ao desenvolvimento dos atletas da equipe."],
               ].map(([n, g, d]) => (
                 <article key={n} className="reveal glass flex gap-5 rounded-3xl p-7">
                   <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-ink">
-                    <img src={n === "Mestre Wesley Lúcio" ? wesleyImg : cristianoImg} alt={n} loading="lazy" className="h-full w-full object-cover object-[50%_15%]" />
+                    <img src={n === "Mestre Wesley Lúcio" ? wesleyImg : davyImg} alt={n} loading="lazy" className="h-full w-full object-cover object-[50%_15%]" />
                   </div>
                   <div>
                     <h3 className="text-4xl">{n}</h3>
@@ -390,7 +400,30 @@ function Index() {
               <p className="mt-3 max-w-2xl opacity-80">
                 Aulas gratuitas de Taekwondo para crianças e adolescentes, usando a arte marcial como ferramenta de transformação social.
               </p>
+              <div className="mt-8 flex flex-col gap-5 border-t border-white/15 pt-7 md:flex-row md:items-center">
+                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-ink">
+                  <img src={cristianoImg} alt="Prof. Cristiano Lima" loading="lazy" className="h-full w-full object-cover object-[50%_15%]" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">Idealizador</p>
+                  <h3 className="mt-2 text-4xl">Prof. Cristiano Lima</h3>
+                  <p className="mt-2 max-w-3xl opacity-80">Idealizador do Projeto Despertar, iniciativa que usa o Taekwondo como ferramenta de transformação social.</p>
+                </div>
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* GALERIA */}
+        <section id="galeria" className="py-24">
+          <div className="mx-auto max-w-6xl px-5">
+            <SectionTitle kicker="Momentos do dojang" title="Nossa" gold="Galeria" />
+            <details className="reveal glass group rounded-3xl p-5">
+              <summary className="cursor-pointer list-none text-center font-display text-3xl text-gold group-open:mb-6">Ver fotos da equipe <span className="ml-2 text-foreground/50">⌄</span></summary>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                {GALLERY.map((image, index) => <img key={image} src={image} alt={`Momento da Team Impérios ${index + 1}`} loading="lazy" className="aspect-square w-full rounded-2xl object-cover transition-transform duration-300 hover:scale-[1.03]" />)}
+              </div>
+            </details>
           </div>
         </section>
 
@@ -403,9 +436,9 @@ function Index() {
                 <h2 className="text-6xl md:text-8xl">
                   Comece sua <span className="text-gold">jornada</span>
                 </h2>
-                <p className="mx-auto mt-4 max-w-lg text-muted-foreground">Agende uma aula experimental gratuita. Fale com a gente pelo Instagram.</p>
-                <a href={IG} target="_blank" rel="noreferrer" className="mt-8 inline-flex rounded-full bg-gold px-8 py-4 font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105">
-                  @teamimperios
+                <p className="mx-auto mt-4 max-w-lg text-muted-foreground">Agende uma aula experimental gratuita. Fale com a gente pelo WhatsApp.</p>
+                <a href={WHATSAPP} target="_blank" rel="noreferrer" className="mt-8 inline-flex rounded-full bg-gold px-8 py-4 font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105">
+                  (35) 99195-0352
                 </a>
                 <p className="mt-6 text-sm font-semibold text-muted-foreground">Varginha · Minas Gerais</p>
               </div>

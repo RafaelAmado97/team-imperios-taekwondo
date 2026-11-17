@@ -2,7 +2,7 @@ import { ArrowUpRight, CalendarDays, Clock3, Users, Ticket } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { CLASS_PRICES, FAMILY_PLANS, WEEKLY_PLANS, TAEKWONDO_SCHEDULES, formatPrice } from "@/lib/plans";
 
-const IG = "https://www.instagram.com/teamimperios/";
+const WHATSAPP = "https://wa.me/5535991950352";
 
 export function PlansSection() {
   return (
@@ -25,7 +25,7 @@ export function PlansSection() {
               <p className="mt-6 font-display text-5xl text-gold">{formatPrice(price)}</p>
               <p className="mt-2 text-sm opacity-75">por mês</p>
               <Button asChild className="mt-6 w-full bg-gold text-primary-foreground">
-                <a href={IG} target="_blank" rel="noreferrer">Escolher plano <ArrowUpRight /></a>
+                <a href={WHATSAPP} target="_blank" rel="noreferrer">Escolher plano <ArrowUpRight /></a>
               </Button>
             </article>
           ))}
@@ -65,7 +65,7 @@ export function PlansSection() {
             <h3 className="text-3xl">Boxe</h3>
             <p className="mt-3 text-sm font-bold text-accent">Terça e quinta</p>
             <Button asChild variant="link" className="mt-3 h-auto justify-start px-0 text-gold-deep">
-              <a href={IG} target="_blank" rel="noreferrer">Consultar horários <ArrowUpRight /></a>
+              <a href={WHATSAPP} target="_blank" rel="noreferrer">Consultar horários <ArrowUpRight /></a>
             </Button>
             <p className="mt-auto pt-6"><span className="font-display text-4xl text-gold">{formatPrice(CLASS_PRICES.boxing)}</span><span className="ml-2 text-xs text-muted-foreground">mensal</span></p>
           </article>

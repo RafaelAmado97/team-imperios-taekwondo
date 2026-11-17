@@ -9,9 +9,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: auto; }
 
 body {
   overscroll-behavior-y: none;
@@ -181,14 +179,35 @@ body {
   box-shadow: 0 0 18px 2px color-mix(in oklab, var(--gold-glow) 70%, transparent);
 }
 
-.reveal { opacity: 0; transform: translateY(40px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1); }
-.reveal.is-visible { opacity: 1; transform: none; }
+.reveal { opacity: 1; transform: none; }
+
+@supports (animation-timeline: view()) and (animation-range: entry 0% cover 32%) {
+  .reveal {
+    animation-name: section-enter;
+    animation-duration: 1ms;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: view(block);
+    animation-range: entry 0% cover 28%;
+  }
+}
+@keyframes section-enter {
+  from { opacity: 0; transform: translateY(42px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
 @keyframes float-slow { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
 .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
+.dan-card, .dan-stat { background: oklch(0.16 0.005 80 / 68%); backdrop-filter: blur(16px) saturate(135%); border: 1px solid oklch(1 0 0 / 34%); box-shadow: 0 12px 36px -16px oklch(0.12 0.005 80 / 65%), inset 0 1px 0 oklch(1 0 0 / 24%); }
+.dan-card { color: oklch(0.97 0.004 85); }
+.dan-card { animation: dan-float 4.5s ease-in-out infinite; }
+.dan-stat { animation: dan-float 5s ease-in-out infinite; }
+.dan-stat:nth-child(2) { animation-delay: .35s; }
+.dan-stat:nth-child(3) { animation-delay: .7s; }
+@keyframes dan-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes glow-pulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
 .animate-glow { animation: glow-pulse 4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
   html { scroll-behavior: auto; }
-  .animate-float-slow, .animate-glow { animation: none; }
+  .animate-float-slow, .animate-glow, .dan-card, .dan-stat { animation: none; }
 }
