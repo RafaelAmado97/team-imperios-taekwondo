@@ -7,6 +7,13 @@ import cristianoImg from "@/assets/cristiano.jpg";
 import davyImg from "@/assets/davy.jpeg";
 import logoImg from "@/assets/logo-team-imperios.jpg";
 import dojangImg from "@/assets/dojang.jpg";
+import projetoCover from "@/assets/projeto/x.jpeg";
+import projeto01 from "@/assets/projeto/WhatsApp Image 2026-11-17 at 16.44.47.jpeg";
+import projeto02 from "@/assets/projeto/WhatsApp Image 2026-11-17 at 16.44.47 (1).jpeg";
+import projeto03 from "@/assets/projeto/WhatsApp Image 2026-11-17 at 16.44.47 (2).jpeg";
+import projeto04 from "@/assets/projeto/WhatsApp Image 2026-11-17 at 16.44.47 (3).jpeg";
+import projeto05 from "@/assets/projeto/WhatsApp Image 2026-11-17 at 16.44.48.jpeg";
+import projeto06 from "@/assets/projeto/WhatsApp Image 2026-11-17 at 16.44.48 (1).jpeg";
 import gallery01 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.23.jpeg";
 import gallery02 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.24.jpeg";
 import gallery03 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.25.jpeg";
@@ -99,6 +106,7 @@ const GALLERY = [
   gallery11,
   gallery12,
 ];
+const PROJECT_GALLERY = [projetoCover, projeto01, projeto02, projeto03, projeto04, projeto05, projeto06];
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
@@ -428,10 +436,16 @@ const AULAS = [
 function Index() {
   useReveal();
   const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null);
   const selectedGalleryImage = selectedGalleryIndex === null ? null : GALLERY[selectedGalleryIndex];
   const navigateGallery = (direction: number) =>
     setSelectedGalleryIndex((current) =>
       current === null ? null : (current + direction + GALLERY.length) % GALLERY.length,
+    );
+  const selectedProjectImage = selectedProjectIndex === null ? null : PROJECT_GALLERY[selectedProjectIndex];
+  const navigateProjectGallery = (direction: number) =>
+    setSelectedProjectIndex((current) =>
+      current === null ? null : (current + direction + PROJECT_GALLERY.length) % PROJECT_GALLERY.length,
     );
   return (
     <div className="overflow-x-clip">
@@ -708,7 +722,30 @@ function Index() {
                   </div>
                 ))}
               </div>
+              <div className="mt-8 border-t border-white/15 pt-7">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">Momentos do projeto</p>
+                <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {PROJECT_GALLERY.map((image, index) => (
+                    <button key={image} type="button" onClick={() => setSelectedProjectIndex(index)} aria-label={`Ampliar foto ${index + 1} do Projeto Despertar`} className="group overflow-hidden rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold">
+                      <img src={image} alt={`Projeto Despertar ${index + 1}`} loading="lazy" className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+            <Dialog open={selectedProjectImage !== null} onOpenChange={(open) => !open && setSelectedProjectIndex(null)}>
+              <DialogContent className="gallery-lightbox max-h-[94vh] w-[calc(100%-2rem)] max-w-6xl overflow-hidden border border-white/25 bg-white/10 p-3 shadow-2xl backdrop-blur-2xl sm:p-4">
+                <DialogTitle className="sr-only">Foto ampliada do Projeto Despertar</DialogTitle>
+                {selectedProjectImage && (
+                  <div className="relative flex min-h-[50vh] items-center justify-center">
+                    <img src={selectedProjectImage} alt={`Projeto Despertar ${selectedProjectIndex! + 1} de ${PROJECT_GALLERY.length}`} className="max-h-[82vh] w-full rounded-xl object-contain" />
+                    <button type="button" onClick={() => navigateProjectGallery(-1)} aria-label="Foto anterior do Projeto Despertar" className="gallery-nav-button left-3"><ChevronLeft /></button>
+                    <button type="button" onClick={() => navigateProjectGallery(1)} aria-label="Próxima foto do Projeto Despertar" className="gallery-nav-button right-3"><ChevronRight /></button>
+                    <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-sm font-semibold text-white backdrop-blur-md">{selectedProjectIndex! + 1} / {PROJECT_GALLERY.length}</span>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 
