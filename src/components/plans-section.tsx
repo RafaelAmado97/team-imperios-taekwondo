@@ -25,7 +25,13 @@ export function PlansSection() {
               <p className="mt-6 font-display text-5xl text-gold">{formatPrice(price)}</p>
               <p className="mt-2 text-sm opacity-75">por mês</p>
               <Button asChild className="mt-6 w-full bg-gold text-primary-foreground">
-                <a href={WHATSAPP} target="_blank" rel="noreferrer">Escolher plano <ArrowUpRight /></a>
+                <a
+                  href={`${WHATSAPP}?text=${encodeURIComponent(`Olá, estava no site e fiquei interessado pelo plano de ${times} ${times === 1 ? "vez" : "vezes"} na semana por ${formatPrice(price)}.`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Escolher plano <ArrowUpRight />
+                </a>
               </Button>
             </article>
           ))}

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import wesleyImg from "@/assets/wesley.jpg";
 import cristianoImg from "@/assets/cristiano.jpg";
@@ -18,6 +19,7 @@ import gallery10 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.30.jpeg";
 import gallery11 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.30 (1).jpeg";
 import gallery12 from "@/assets/WhatsApp Image 2026-11-16 at 13.42.30 (2).jpeg";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { PlansSection } from "@/components/plans-section";
 
 const TITLE = "Team Impérios Taekwondo | Dojang Moo Duk Kwan em Varginha/MG";
@@ -64,8 +66,8 @@ const NAV = [
   ["aulas", "Aulas"],
   ["planos", "Planos"],
   ["estrutura", "Estrutura"],
-  ["galeria", "Galeria"],
   ["mestres", "Mestres"],
+  ["galeria", "Galeria"],
   ["contato", "Contato"],
 ] as const;
 
@@ -75,13 +77,25 @@ const GALLERY = [gallery01, gallery02, gallery03, gallery04, gallery05, gallery0
 
 function scrollToSection(id: string) {
   const el = document.getElementById(id);
-  if (!el) return;
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const header = document.querySelector("header");
-  const headerOffset = (header?.getBoundingClientRect().height ?? 76) + 20;
-  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerOffset);
-  window.scrollTo({ top, behavior: reducedMotion ? "auto" : "smooth" });
-  window.history.replaceState(null, "", `#${id}`);
+  const target = el ? el.getBoundingClientRect().top + window.scrollY - 88 : 0;
+  animateTo(target, 1100);
+  window.history.replaceState(null, "", id === "inicio" ? location.pathname : `#${id}`);
+}
+
+function animateTo(target: number, duration = 1100) {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    window.scrollTo(0, target);
+    return;
+  }
+  const start = window.scrollY;
+  const startTime = performance.now();
+  const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const step = (now: number) => {
+    const progress = Math.min((now - startTime) / duration, 1);
+    window.scrollTo(0, start + (target - start) * ease(progress));
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 function useReveal() {
@@ -96,61 +110,130 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
   useEffect(() => {
-    const sectionIds = ["inicio", ...NAV.map(([id]) => id)];
-    let locked = false;
-    let unlockTimer = 0;
-    const onWheel = (event: WheelEvent) => {
-      if (event.ctrlKey || event.deltaY === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      const element = event.target;
-      if (element instanceof Element && element.closest("[data-native-scroll], details[open]")) return;
-      const scrollable = element instanceof Element ? element.closest<HTMLElement>("[data-scrollable]") : null;
-      if (scrollable && scrollable.scrollHeight > scrollable.clientHeight) {
-        const canScroll = event.deltaY < 0 ? scrollable.scrollTop > 0 : scrollable.scrollTop + scrollable.clientHeight < scrollable.scrollHeight;
-        if (canScroll) return;
-      }
-      if (locked) {
-        event.preventDefault();
-        return;
-      }
-      event.preventDefault();
-
-      const header = document.querySelector("header");
-      const threshold = (header?.getBoundingClientRect().height ?? 76) + 40;
-      const sections = sectionIds.map((id) => document.getElementById(id)).filter((section): section is HTMLElement => section !== null);
-      const currentIndex = sections.reduce((current, section, index) => section.getBoundingClientRect().top <= threshold ? index : current, 0);
-      const direction = event.deltaY > 0 ? 1 : -1;
-      const nextSection = sections[Math.max(0, Math.min(sections.length - 1, currentIndex + direction))];
-      if (!nextSection || nextSection === sections[currentIndex]) return;
-
-      locked = true;
-      window.clearTimeout(unlockTimer);
-      window.scrollTo({ top: Math.max(0, nextSection.getBoundingClientRect().top + window.scrollY - threshold), behavior: "smooth" });
-      window.history.replaceState(null, "", `#${nextSection.id}`);
-      unlockTimer = window.setTimeout(() => { locked = false; }, 1100);
+    let animationFrame = 0;
+    let animationTimer = 0;
+    let touchStartY = 0;
+    const scrollToTarget = (target: number, duration: number) => {
+      cancelAnimationFrame(animationFrame);
+      window.clearTimeout(animationTimer);
+      const start = window.scrollY;
+      const startTime = performance.now();
+      const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const step = (now: number) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        window.scrollTo(0, start + (target - start) * ease(progress));
+        if (progress < 1) animationFrame = requestAnimationFrame(step);
+      };
+      animationFrame = requestAnimationFrame(step);
+      animationTimer = window.setTimeout(() => { animationFrame = 0; }, duration + 30);
     };
+    const onClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!link) return;
+      const id = link.getAttribute("href")?.slice(1);
+      if (!id) return;
+      const section = document.getElementById(id);
+      event.preventDefault();
+      scrollToTarget(section ? section.getBoundingClientRect().top + window.scrollY - 88 : 0, 1100);
+      window.history.replaceState(null, "", `#${id}`);
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (window.innerWidth < 1024 || event.ctrlKey || event.deltaY === 0) return;
+      const element = event.target;
+      if (element instanceof Element && element.closest("[data-native-scroll], [role=dialog]")) return;
+      const sections = Array.from(document.querySelectorAll<HTMLElement>("main > section[id]"));
+      if (!sections.length) return;
+      const headerBottom = document.querySelector("header")?.getBoundingClientRect().bottom ?? 80;
+      const topInset = headerBottom + 16;
+      const viewHeight = window.innerHeight - topInset;
+      const marker = topInset + 2;
+      const direction = event.deltaY > 0 ? 1 : -1;
+      const visible = sections.map((section, index) => ({ section, index, rect: section.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.bottom > topInset + 2 && rect.top < window.innerHeight - 2);
+      if (!visible.length) return;
+      const current = direction > 0
+        ? visible.find(({ rect }) => rect.top <= topInset + 2) ?? visible[0]
+        : [...visible].reverse().find(({ rect }) => rect.top < topInset + viewHeight * 0.55) ?? visible[0];
+      const currentIndex = current.index;
+      const currentSection = current.section;
+      const sectionTop = currentSection.getBoundingClientRect().top;
+      const sectionBottom = currentSection.getBoundingClientRect().bottom;
+      const sectionIsTall = currentSection.offsetHeight > viewHeight + 8;
+
+      // Em seções altas, liberar a roda enquanto ainda há conteúdo abaixo/acima no viewport.
+      if (sectionIsTall && direction > 0 && sectionBottom > window.innerHeight + 2) return;
+      if (sectionIsTall && direction < 0 && sectionTop < topInset - 2 && sectionBottom > topInset + viewHeight * 0.55) return;
+
+      event.preventDefault();
+      const nextIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
+      const next = sections[nextIndex];
+      if (!next || next === currentSection) return;
+
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const nextTop = Math.max(0, next.getBoundingClientRect().top + window.scrollY - topInset);
+      scrollToTarget(Math.min(maxScroll, nextTop), 950);
+      window.history.replaceState(null, "", `#${next.id}`);
+    };
+    const onTouchStart = (event: TouchEvent) => { touchStartY = event.touches[0]?.clientY ?? 0; };
+    const onTouchEnd = (event: TouchEvent) => {
+      if (window.innerWidth >= 1024) return;
+      const endY = event.changedTouches[0]?.clientY ?? touchStartY;
+      const delta = touchStartY - endY;
+      if (Math.abs(delta) < 60) return;
+      const sections = Array.from(document.querySelectorAll<HTMLElement>("main > section[id]"));
+      const topInset = (document.querySelector("header")?.getBoundingClientRect().bottom ?? 80) + 16;
+      const viewHeight = window.innerHeight - topInset;
+      const marker = topInset + 2;
+      const direction = delta > 0 ? 1 : -1;
+      const visible = sections.map((section, index) => ({ section, index, rect: section.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.bottom > topInset + 2 && rect.top < window.innerHeight - 2);
+      if (!visible.length) return;
+      const current = direction > 0
+        ? visible.find(({ rect }) => rect.top <= marker) ?? visible[0]
+        : [...visible].reverse().find(({ rect }) => rect.bottom >= window.innerHeight - 2) ?? visible[visible.length - 1];
+      const currentIndex = current.index;
+      const currentSection = current.section;
+      if (currentSection.offsetHeight > viewHeight + 8) {
+        if (direction > 0 && currentSection.getBoundingClientRect().bottom > window.innerHeight + 2) return;
+        if (direction < 0 && currentSection.getBoundingClientRect().top < topInset - 2) return;
+      }
+      const next = sections[Math.max(0, Math.min(sections.length - 1, currentIndex + direction))];
+      if (!next || next === currentSection) return;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const nextTop = Math.max(0, next.getBoundingClientRect().top + window.scrollY - topInset);
+      scrollToTarget(Math.min(maxScroll, nextTop), 950);
+      window.history.replaceState(null, "", `#${next.id}`);
+    };
+    document.addEventListener("click", onClick);
     window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
     return () => {
+      document.removeEventListener("click", onClick);
       window.removeEventListener("wheel", onWheel);
-      window.clearTimeout(unlockTimer);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.clearTimeout(animationTimer);
+      cancelAnimationFrame(animationFrame);
     };
   }, []);
   useEffect(() => {
     let frame = 0;
     const update = () => {
       setScrolled(window.scrollY > 30);
-      const threshold = 150;
-      const sections = NAV.map(([id]) => ({ id, el: document.getElementById(id) }))
-        .filter((item): item is { id: (typeof NAV)[number][0]; el: HTMLElement } => item.el !== null)
-        .map(({ id, el }) => ({ id, top: el.getBoundingClientRect().top }));
-      const current = [...sections].reverse().find((section) => section.top <= threshold)?.id ?? "";
-      setActive(current);
+      const sections = NAV.map(([id]) => ({ id, el: document.getElementById(id) })).filter((item): item is { id: (typeof NAV)[number][0]; el: HTMLElement } => item.el !== null);
+      const lastSection = sections.at(-1);
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      const marker = (document.querySelector("header")?.getBoundingClientRect().bottom ?? 80) + 12;
+      const visibleEntries = sections.map(({ id, el }) => ({ id, top: el.getBoundingClientRect().top, bottom: el.getBoundingClientRect().bottom }));
+      const current = atBottom ? lastSection?.id : [...visibleEntries].reverse().find(({ top, bottom }) => top <= marker && bottom > marker)?.id ?? [...visibleEntries].reverse().find(({ top }) => top <= marker)?.id;
+      setActive(current ?? "");
     };
     const onScroll = () => {
       if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        update();
-      });
+      frame = window.requestAnimationFrame(() => { frame = 0; update(); });
     };
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -161,58 +244,23 @@ function Header() {
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
-  const go = (id: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    setOpen(false);
-    scrollToSection(id);
-  };
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 md:px-6">
-      <nav
-        className={`mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-3 transition-all duration-500 ${scrolled ? "glass" : "bg-transparent"}`}
-        aria-label="Navegação principal"
-      >
-        <a href="#inicio" onClick={go("inicio")} className="flex items-center gap-2">
+      <nav className={`mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-3 transition-all duration-500 ${scrolled ? "glass" : "bg-transparent"}`} aria-label="Navegação principal">
+        <a href="#inicio" className="flex items-center gap-2">
           <img src={logoImg} alt="Logo Team Impérios Taekwondo" className="h-10 w-10 rounded-full object-cover shadow-gold" />
-          <span className="font-display text-xl tracking-wider md:text-2xl">
-            Team <span className="text-gold">Impérios</span>
-          </span>
+          <span className="font-display text-xl tracking-wider md:text-2xl">Team <span className="text-gold">Impérios</span></span>
         </a>
         <ul className="hidden items-center gap-1 lg:flex">
-          {NAV.map(([id, label]) => (
-            <li key={id}>
-              <a
-                href={`#${id}`}
-                onClick={go(id)}
-                aria-current={active === id ? "location" : undefined}
-                className={`rounded-full px-3 py-2 text-sm font-semibold transition-colors ${active === id ? "bg-ink text-ink-foreground" : "text-foreground/75 hover:text-foreground"}`}
-              >
-                {label}
-              </a>
-            </li>
-          ))}
+          {NAV.map(([id, label]) => <li key={id}><a href={`#${id}`} aria-current={active === id ? "location" : undefined} className={`rounded-full px-3 py-2 text-sm font-semibold transition-colors ${active === id ? "bg-ink text-ink-foreground" : "text-foreground/75 hover:text-foreground"}`}>{label}</a></li>)}
         </ul>
-        <a href={IG} target="_blank" rel="noreferrer" className="hidden rounded-full bg-gold px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105 lg:inline-flex">
-          Aula experimental
-        </a>
+        <a href={IG} target="_blank" rel="noreferrer" className="hidden rounded-full bg-gold px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-gold transition-transform hover:scale-105 lg:inline-flex">Aula experimental</a>
         <Button variant="ghost" size="icon" aria-label={open ? "Fechar menu" : "Abrir menu"} aria-expanded={open} onClick={() => setOpen(!open)} className="glass grid h-10 w-10 place-items-center rounded-xl lg:hidden">
-          <span className="flex flex-col gap-1.5">
-            <span className={`h-0.5 w-5 bg-foreground transition-transform ${open ? "translate-y-2 rotate-45" : ""}`} />
-            <span className={`h-0.5 w-5 bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} />
-            <span className={`h-0.5 w-5 bg-foreground transition-transform ${open ? "-translate-y-2 -rotate-45" : ""}`} />
-          </span>
+          <span className="flex flex-col gap-1.5"><span className={`h-0.5 w-5 bg-foreground transition-transform ${open ? "translate-y-2 rotate-45" : ""}`} /><span className={`h-0.5 w-5 bg-foreground transition-opacity ${open ? "opacity-0" : ""}`} /><span className={`h-0.5 w-5 bg-foreground transition-transform ${open ? "-translate-y-2 -rotate-45" : ""}`} /></span>
         </Button>
       </nav>
       <div inert={!open} className={`glass mx-auto mt-2 max-w-6xl overflow-hidden rounded-2xl transition-all duration-500 lg:hidden ${open ? "max-h-[28rem] opacity-100" : "max-h-0 border-0 opacity-0"}`}>
-        <ul className="flex flex-col p-3">
-          {NAV.map(([id, label]) => (
-            <li key={id}>
-              <a href={`#${id}`} onClick={go(id)} className="block rounded-xl px-4 py-3 font-semibold hover:bg-muted">
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <ul className="flex flex-col p-3">{NAV.map(([id, label]) => <li key={id}><a href={`#${id}`} onClick={() => setOpen(false)} className="block rounded-xl px-4 py-3 font-semibold hover:bg-muted">{label}</a></li>)}</ul>
       </div>
     </header>
   );
@@ -246,6 +294,9 @@ const AULAS = [
 
 function Index() {
   useReveal();
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+  const selectedGalleryImage = selectedGalleryIndex === null ? null : GALLERY[selectedGalleryIndex];
+  const navigateGallery = (direction: number) => setSelectedGalleryIndex((current) => current === null ? null : (current + direction + GALLERY.length) % GALLERY.length);
   return (
     <div className="overflow-x-clip">
       <Header />
@@ -400,15 +451,21 @@ function Index() {
               <p className="mt-3 max-w-2xl opacity-80">
                 Aulas gratuitas de Taekwondo para crianças e adolescentes, usando a arte marcial como ferramenta de transformação social.
               </p>
-              <div className="mt-8 flex flex-col gap-5 border-t border-white/15 pt-7 md:flex-row md:items-center">
-                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-ink">
-                  <img src={cristianoImg} alt="Prof. Cristiano Lima" loading="lazy" className="h-full w-full object-cover object-[50%_15%]" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">Idealizador</p>
-                  <h3 className="mt-2 text-4xl">Prof. Cristiano Lima</h3>
-                  <p className="mt-2 max-w-3xl opacity-80">Idealizador do Projeto Despertar, iniciativa que usa o Taekwondo como ferramenta de transformação social.</p>
-                </div>
+              <div className="mt-8 grid gap-5 border-t border-white/15 pt-7 md:grid-cols-2">
+                {[
+                  ["Mestre Wesley Lúcio", wesleyImg],
+                  ["Prof. Cristiano Lima", cristianoImg],
+                ].map(([name, image]) => (
+                  <div key={name} className="flex items-center gap-5 rounded-2xl border border-white/15 bg-white/5 p-4">
+                    <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl bg-ink">
+                      <img src={image} alt={name} loading="lazy" className="h-full w-full object-cover object-[50%_15%]" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.3em] text-gold">Idealizador</p>
+                      <h3 className="mt-2 text-3xl">{name}</h3>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -421,14 +478,37 @@ function Index() {
             <details className="reveal glass group rounded-3xl p-5">
               <summary className="cursor-pointer list-none text-center font-display text-3xl text-gold group-open:mb-6">Ver fotos da equipe <span className="ml-2 text-foreground/50">⌄</span></summary>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-                {GALLERY.map((image, index) => <img key={image} src={image} alt={`Momento da Team Impérios ${index + 1}`} loading="lazy" className="aspect-square w-full rounded-2xl object-cover transition-transform duration-300 hover:scale-[1.03]" />)}
+                {GALLERY.map((image, index) => (
+                  <button key={image} type="button" onClick={() => setSelectedGalleryIndex(index)} aria-label={`Ampliar foto ${index + 1} da Team Impérios`} className="group overflow-hidden rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold">
+                    <img src={image} alt={`Momento da Team Impérios ${index + 1}`} loading="lazy" className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  </button>
+                ))}
               </div>
             </details>
+            <Dialog open={selectedGalleryImage !== null} onOpenChange={(open) => !open && setSelectedGalleryIndex(null)}>
+              <DialogContent
+                className="gallery-lightbox max-h-[94vh] w-[calc(100%-2rem)] max-w-6xl overflow-hidden border border-white/25 bg-white/10 p-3 shadow-2xl backdrop-blur-2xl sm:p-4"
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowLeft") { event.preventDefault(); navigateGallery(-1); }
+                  if (event.key === "ArrowRight") { event.preventDefault(); navigateGallery(1); }
+                }}
+              >
+                <DialogTitle className="sr-only">Foto ampliada da Team Impérios</DialogTitle>
+                {selectedGalleryImage && (
+                  <div className="relative flex min-h-[50vh] items-center justify-center">
+                    <img src={selectedGalleryImage} alt={`Foto ${selectedGalleryIndex! + 1} de ${GALLERY.length} da Team Impérios Taekwondo`} className="max-h-[82vh] w-full rounded-xl object-contain" />
+                    <button type="button" onClick={() => navigateGallery(-1)} aria-label="Foto anterior" className="gallery-nav-button left-3"><ChevronLeft /></button>
+                    <button type="button" onClick={() => navigateGallery(1)} aria-label="Próxima foto" className="gallery-nav-button right-3"><ChevronRight /></button>
+                    <span className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/55 px-3 py-1 text-sm font-semibold text-white backdrop-blur-md">{selectedGalleryIndex! + 1} / {GALLERY.length}</span>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </section>
 
         {/* CONTATO */}
-        <section id="contato" className="py-24">
+        <section id="contato" className="min-h-[calc(100svh-6rem)] scroll-mt-28 py-24">
           <div className="mx-auto max-w-4xl px-5">
             <div className="reveal glass relative overflow-hidden rounded-[2.5rem] px-6 py-16 text-center md:px-16">
               <div className="bg-halo animate-glow pointer-events-none absolute inset-0" />

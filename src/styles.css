@@ -199,11 +199,16 @@ body {
 .animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
 .dan-card, .dan-stat { background: oklch(0.16 0.005 80 / 68%); backdrop-filter: blur(16px) saturate(135%); border: 1px solid oklch(1 0 0 / 34%); box-shadow: 0 12px 36px -16px oklch(0.12 0.005 80 / 65%), inset 0 1px 0 oklch(1 0 0 / 24%); }
 .dan-card { color: oklch(0.97 0.004 85); }
+.dan-stat p:last-child { color: oklch(0.96 0.004 85 / 88%); }
 .dan-card { animation: dan-float 4.5s ease-in-out infinite; }
 .dan-stat { animation: dan-float 5s ease-in-out infinite; }
 .dan-stat:nth-child(2) { animation-delay: .35s; }
 .dan-stat:nth-child(3) { animation-delay: .7s; }
 @keyframes dan-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.gallery-lightbox { background: oklch(0.16 0.005 80 / 78%); }
+.gallery-nav-button { position: absolute; top: 50%; display: grid; width: 2.75rem; height: 2.75rem; transform: translateY(-50%); place-items: center; border: 1px solid oklch(1 0 0 / 32%); border-radius: 9999px; background: oklch(0.16 0.005 80 / 72%); color: white; backdrop-filter: blur(12px); transition: background-color .2s, transform .2s; }
+.gallery-nav-button:hover { transform: translateY(-50%) scale(1.08); background: var(--gold-deep); }
+.gallery-nav-button:focus-visible { outline: 2px solid var(--gold-glow); outline-offset: 3px; }
 @keyframes glow-pulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
 .animate-glow { animation: glow-pulse 4s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
