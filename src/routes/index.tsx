@@ -197,19 +197,16 @@ function Header() {
             visible[0]);
       const currentIndex = current.index;
       const currentSection = current.section;
-      const sectionTop = currentSection.getBoundingClientRect().top;
-      const sectionBottom = currentSection.getBoundingClientRect().bottom;
+      const currentRect = currentSection.getBoundingClientRect();
+      const sectionTop = currentRect.top;
+      const sectionBottom = currentRect.bottom;
+      const sectionDocumentTop = currentRect.top + window.scrollY;
+      const sectionDocumentBottom = currentRect.bottom + window.scrollY;
       const sectionIsTall = currentSection.offsetHeight > viewHeight + 8;
 
       // Em seções altas, liberar a roda enquanto ainda há conteúdo abaixo/acima no viewport.
-      if (sectionIsTall && direction > 0 && sectionBottom > window.innerHeight + 2) return;
-      if (
-        sectionIsTall &&
-        direction < 0 &&
-        sectionTop < topInset - 2 &&
-        sectionBottom > topInset + viewHeight * 0.55
-      )
-        return;
+      if (sectionIsTall && direction > 0 && window.scrollY < sectionDocumentBottom - window.innerHeight + 2) return;
+      if (sectionIsTall && direction < 0 && window.scrollY > sectionDocumentTop - topInset + 2) return;
 
       event.preventDefault();
       const nextIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
@@ -247,9 +244,11 @@ function Header() {
       const currentIndex = current.index;
       const currentSection = current.section;
       if (currentSection.offsetHeight > viewHeight + 8) {
-        if (direction > 0 && currentSection.getBoundingClientRect().bottom > window.innerHeight + 2)
-          return;
-        if (direction < 0 && currentSection.getBoundingClientRect().top < topInset - 2) return;
+        const currentRect = currentSection.getBoundingClientRect();
+        const sectionDocumentTop = currentRect.top + window.scrollY;
+        const sectionDocumentBottom = currentRect.bottom + window.scrollY;
+        if (direction > 0 && window.scrollY < sectionDocumentBottom - window.innerHeight + 2) return;
+        if (direction < 0 && window.scrollY > sectionDocumentTop - topInset + 2) return;
       }
       const next = sections[Math.max(0, Math.min(sections.length - 1, currentIndex + direction))];
       if (!next || next === currentSection) return;
